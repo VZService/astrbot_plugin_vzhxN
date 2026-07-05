@@ -1,10 +1,6 @@
 # VZ核心（公开版）
 
-此版本为*公开版*，不含 v 系列（绑定/签到/积分）指令。
-
-完整版请访问：https://github.com/VZService/astrbot_plugin_vzhx
-
----
+此版本为*公开版*
 
 一个功能丰富的 AstrBot 核心，集成了多种娱乐和实用功能，并支持通过 WebUI 进行灵活配置。
 
