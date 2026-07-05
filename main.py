@@ -113,8 +113,7 @@ class ASbVZPlugin(Star):
             return default
 
     # 功能指令
-    @filter.command("about")
-    @filter.command("关于")
+    @filter.command("about", alias={'关于'})
     async def about(self, event: AstrMessageEvent):
         yield event.plain_result(
             f"==关于vzhx插件==\n"
