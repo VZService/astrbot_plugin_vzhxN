@@ -142,6 +142,9 @@ class ASbVZPlugin(Star):
         # 若仍未匹配（如阈值全为负），强制为凶
         if level not in thresholds:
             level = "凶"
+        # 若自定义等级无对应评语，回退凶
+        if level not in DEFAULT_JRRP_COMMENTS and level not in comments:
+            level = "凶"
 
         comments = self._safe_get_dict("jrrp_comments", {})
         level_comments = comments.get(level)
@@ -223,6 +226,7 @@ class ASbVZPlugin(Star):
         else:
             reply = f"🎉 恭喜猜中！数字就是 {game.target}，你用了 {game.guesses} 次猜对！游戏结束。"
             game.active = False
+            del guess_games[user_key]
 
         yield event.plain_result(reply)
 
@@ -255,9 +259,9 @@ class ASbVZPlugin(Star):
             yield event.plain_result("营销号模板缺失")
             return
 
-        title = random.choice(titles).format(topic)
-        body = random.choice(bodies).format(topic)
-        extra = random.choice(extras) if extras else ""
+        title = random.choice(titles).replace('{}', topic)
+        body = random.choice(bodies).replace('{}', topic)
+        extra = random.choice(extras).replace('{}', topic) if extras else ""
 
         yield event.plain_result(f"📢 {title}\n\n{body}\n\n{extra}")
 
