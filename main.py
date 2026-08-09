@@ -7,9 +7,10 @@ import random
 import time
 import asyncio
 import platform
+import re
 from typing import Dict, Any, Optional, List
 
-PLUGIN_VERSION = "v1.2.7"
+PLUGIN_VERSION = "v1.2.8"
 
 # 内置默认配置
 DEFAULT_JRRP_COMMENTS = {
@@ -181,11 +182,8 @@ class ASbVZPlugin(Star):
         fact = random.choice(facts)
         yield event.plain_result(f"🧊 冷知识：{fact}")
 
-    @filter.command("猜数字")
-    async def guess_number(self, event: AstrMessageEvent, guess: str = None):
-        if not self._is_enabled("enable_guess_number"):
-            return
-
+    async def _guess_number_core(self, event: AstrMessageEvent, guess: str = None):
+        """猜数字核心逻辑：guess 为 None 时开始新游戏，否则用该数字猜测。"""
         user_key = event.unified_msg_origin
         range_cfg = self._safe_get_dict("guess_number_range", {"min": 1, "max": 100})
         min_val = range_cfg.get("min", 1)
@@ -229,6 +227,32 @@ class ASbVZPlugin(Star):
             del guess_games[user_key]
 
         yield event.plain_result(reply)
+
+    @filter.command("猜数字")
+    async def guess_number(self, event: AstrMessageEvent, guess: str = None):
+        if not self._is_enabled("enable_guess_number"):
+            return
+        async for r in self._guess_number_core(event, guess):
+            yield r
+
+    @filter.regex(r"猜数字\d+")
+    async def guess_number_nospace(self, event: AstrMessageEvent):
+        """支持无空格写法：猜数字50 / &猜数字50（前缀无关，自动开局并猜测）。"""
+        if not self._is_enabled("enable_guess_number"):
+            return
+        m = re.search(r"猜数字(\d+)", event.get_message_str())
+        if not m:
+            return
+        guess = m.group(1)
+        user_key = event.unified_msg_origin
+        # 若尚未开始游戏，先自动开局再用该数字猜测
+        if user_key not in guess_games or not guess_games[user_key].active:
+            range_cfg = self._safe_get_dict("guess_number_range", {"min": 1, "max": 100})
+            min_val = range_cfg.get("min", 1)
+            max_val = range_cfg.get("max", 100)
+            guess_games[user_key] = GuessGame(random.randint(min_val, max_val), min_val, max_val)
+        async for r in self._guess_number_core(event, guess):
+            yield r
 
     @filter.command("废话")
     async def bullshit(self, event: AstrMessageEvent):

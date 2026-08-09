@@ -2,7 +2,7 @@ name: astrbot_plugin_vzhxN
 display_name: VZ核心(公开版)
 desc: VZ核心公开版 - 基础娱乐功能
 short_desc: 集成冷知识、猜数字、废话、营销号等娱乐功能，全部支持WebUI配置。
-version: v1.2.7
+version: v1.2.8
 astrbot_version: ">=4.16.3"
 author: VZ
 repo: https://github.com/VZService/astrbot_plugin_vzhxN
